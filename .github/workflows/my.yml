@@ -9,13 +9,14 @@
 
 name: openwrt第一次编译
 
-on:
-  push:
-    branches: 
-      - master
+on: [push]
+# on:
+#   push:
+#     branches: 
+#       - master
 # schedule:
 #   - cron: 0 20 * * *
-  
+ 
 jobs:
 
   build:
