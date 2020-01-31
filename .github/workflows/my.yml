@@ -7,16 +7,17 @@
 # <https://github.com/KFERMercer/OpenWrt-CI>
 #
 
-name: openwrt第二次编译
+name: 第三次编译
 
 on: [push]
-# on:
-#   push:
-#     branches: 
-#       - master
+#  push:
+#    branches: 
+#      - master
 # schedule:
 #   - cron: 0 20 * * *
- 
+# release:
+#   types: [published]
+
 jobs:
 
   build:
@@ -97,22 +98,14 @@ jobs:
 
           # 编译N1固件:
           cat >> .config <<EOF
-          CONFIG_TARGET_armvirt=y
-          CONFIG_TARGET_armvirt_64=y
-          CONFIG_TARGET_armvirt_64_Default=y
+          CONFIG_TARGET_brcm2708=y
+          CONFIG_TARGET_brcm2708_bcm2710=y
+          CONFIG_TARGET_brcm2708_bcm2710_DEVICE_rpi-3=y
           EOF
 
           # 固件压缩:
           cat >> .config <<EOF
           CONFIG_TARGET_IMAGES_GZIP=y
-          CONFIG_TARGET_ROOTFS_EXT4FS=y
-          CONFIG_TARGET_EXT4_RESERVED_PCT=0
-          CONFIG_TARGET_EXT4_BLOCKSIZE_4K=y
-          CONFIG_TARGET_EXT4_BLOCKSIZE=4096
-          CONFIG_TARGET_UBIFS_FREE_SPACE_FIXUP=y
-          CONFIG_TARGET_UBIFS_JOURNAL_SIZE=""
-          CONFIG_TARGET_ROOTFS_PARTSIZE=160
-          
           EOF
 
           # 编译UEFI固件:
@@ -121,118 +114,63 @@ jobs:
           EOF
 
           # IPv6支持:
-          cat >> .config <<EOF
-          CONFIG_PACKAGE_dnsmasq_full_dhcpv6=y
-          CONFIG_PACKAGE_ipv6helper=y
-          EOF
+          #cat >> .config <<EOF
+          #CONFIG_PACKAGE_dnsmasq_full_dhcpv6=y
+          #CONFIG_PACKAGE_ipv6helper=y
+          # EOF
 
           # 多文件系统支持:
           cat >> .config <<EOF
-          CONFIG_PACKAGE_kmod-fs-9p=m
-          # CONFIG_PACKAGE_kmod-fs-afs is not set
-          CONFIG_PACKAGE_kmod-fs-autofs4=y
-          CONFIG_PACKAGE_kmod-fs-btrfs=y
-          # CONFIG_PACKAGE_kmod-fs-cifs is not set
-          CONFIG_PACKAGE_kmod-fs-cifsd=y
-          # CONFIG_PACKAGE_kmod-fs-configfs is not set
-          # CONFIG_PACKAGE_kmod-fs-cramfs is not set
-          CONFIG_PACKAGE_kmod-fs-exfat=y
-          CONFIG_PACKAGE_kmod-fs-exportfs=y
-          CONFIG_PACKAGE_kmod-fs-ext4=y
-          CONFIG_PACKAGE_kmod-fs-f2fs=m
-          CONFIG_PACKAGE_kmod-fs-fscache=m
-          # CONFIG_PACKAGE_kmod-fs-hfs is not set
-          # CONFIG_PACKAGE_kmod-fs-hfsplus is not set
-          CONFIG_PACKAGE_kmod-fs-isofs=m
-          CONFIG_PACKAGE_kmod-fs-jfs=m
-          # CONFIG_PACKAGE_kmod-fs-minix is not set
-          CONFIG_PACKAGE_kmod-fs-msdos=y
-          CONFIG_PACKAGE_kmod-fs-nfs=m
-          CONFIG_PACKAGE_kmod-fs-nfs-common=m
-          CONFIG_PACKAGE_kmod-fs-nfs-common-rpcsec=m
-          CONFIG_PACKAGE_kmod-fs-nfs-v3=m
-          CONFIG_PACKAGE_kmod-fs-nfs-v4=m
-          CONFIG_PACKAGE_kmod-fs-nfsd=m
-          # CONFIG_PACKAGE_kmod-fs-ntfs is not set
-          CONFIG_PACKAGE_kmod-fs-reiserfs=m
-          # CONFIG_PACKAGE_kmod-fs-smbd is not set
-          CONFIG_PACKAGE_kmod-fs-squashfs=m
-          # CONFIG_PACKAGE_kmod-fs-udf is not set
-          CONFIG_PACKAGE_kmod-fs-vfat=y
-          CONFIG_PACKAGE_kmod-fs-xfs=y
-          CONFIG_PACKAGE_kmod-fuse=y
+          CONFIG_PACKAGE_kmod-fs-nfs=y
+          CONFIG_PACKAGE_kmod-fs-nfs-common=y
+          CONFIG_PACKAGE_kmod-fs-nfs-v3=y
+          CONFIG_PACKAGE_kmod-fs-nfs-v4=y
+          CONFIG_PACKAGE_kmod-fs-ntfs=y
+          CONFIG_PACKAGE_kmod-fs-squashfs=y
           EOF
 
           # USB3.0支持:
-          cat >> .config <<EOF
-          CONFIG_PACKAGE_kmod-usb-ohci=y
-          CONFIG_PACKAGE_kmod-usb-ohci-pci=y
-          CONFIG_PACKAGE_kmod-usb2=y
-          CONFIG_PACKAGE_kmod-usb2-pci=y
-          CONFIG_PACKAGE_kmod-usb3=y
-          EOF
+          #cat >> .config <<EOF
+          #CONFIG_PACKAGE_kmod-usb-ohci=y
+          #CONFIG_PACKAGE_kmod-usb-ohci-pci=y
+          #CONFIG_PACKAGE_kmod-usb2=y
+          #CONFIG_PACKAGE_kmod-usb2-pci=y
+          # CONFIG_PACKAGE_kmod-usb3=y
+          # EOF
 
           # 常用LuCI插件选择:
-          cat >> .config <<EOF
-          CONFIG_PACKAGE_luci-app-adbyby-plus=y
-          CONFIG_PACKAGE_luci-app-arpbind=y
-          CONFIG_PACKAGE_luci-app-autoreboot=y
-          CONFIG_PACKAGE_luci-app-brook-server=y
-          CONFIG_PACKAGE_luci-app-cifsd=y
-          CONFIG_PACKAGE_luci-app-control-mia=y
-          CONFIG_PACKAGE_luci-app-control-timewol=y
-          CONFIG_PACKAGE_luci-app-control-webrestriction=y
-          CONFIG_PACKAGE_luci-app-control-weburl=y
-          CONFIG_PACKAGE_luci-app-ddns=y
+          # cat >> .config <<EOF
+          # CONFIG_PACKAGE_luci-app-adbyby-plus=y
+          # CONFIG_PACKAGE_luci-app-aria2=y
+          # CONFIG_PACKAGE_luci-app-baidupcs-web=y
+          # CONFIG_PACKAGE_luci-app-docker=y
+          # CONFIG_PACKAGE_luci-app-frpc=y
+          # CONFIG_PACKAGE_luci-app-kodexplorer=y
           CONFIG_PACKAGE_luci-app-dnsforwarder=y
-          CONFIG_PACKAGE_luci-app-fileassistant=y
-          CONFIG_PACKAGE_luci-app-filetransfer=y
-          CONFIG_PACKAGE_luci-app-firewall=y
-          CONFIG_PACKAGE_luci-app-flowoffload=y
-          CONFIG_PACKAGE_luci-app-frpc=y
-          CONFIG_PACKAGE_luci-app-hd-idle=y
-          CONFIG_PACKAGE_luci-app-minidlna=y
-          CONFIG_PACKAGE_luci-app-mjpg-streamer=y
-          CONFIG_PACKAGE_luci-app-mwan3=y
-          CONFIG_PACKAGE_luci-app-mwan3helper=y
-          CONFIG_PACKAGE_luci-app-netdata=y
-          CONFIG_PACKAGE_luci-app-nlbwmon=y
-          CONFIG_PACKAGE_luci-app-nps=y
-          CONFIG_PACKAGE_luci-app-ocserv=y
-          CONFIG_PACKAGE_luci-app-openvpn=y
-          CONFIG_PACKAGE_luci-app-openvpn-server=y
-          CONFIG_PACKAGE_luci-app-passwall=yCONFIG_PACKAGE_luci-app-adbyby-plus=y
-          EOF
-
-          # Configuration
-          cat >> .config <<EOF
-          CONFIG_PACKAGE_luci-app-passwall_INCLUDE_ipt2socks=y
-          CONFIG_PACKAGE_luci-app-passwall_INCLUDE_V2ray=y
-          CONFIG_PACKAGE_luci-app-passwall_INCLUDE_pdnsd=y
-          CONFIG_PACKAGE_luci-app-ramfree=y
+          CONFIG_PACKAGE_luci-app-passwall=y
           CONFIG_PACKAGE_luci-app-smartdns=y
-          CONFIG_PACKAGE_luci-app-sqm=y
-          CONFIG_PACKAGE_luci-app-syncdial=y
-          CONFIG_PACKAGE_luci-app-tinyproxy=y
-          CONFIG_PACKAGE_luci-app-udpxy=y
-          CONFIG_PACKAGE_luci-app-upnp=y
-          CONFIG_PACKAGE_luci-app-usb-printer=y
-          CONFIG_PACKAGE_luci-app-verysync=y
-          CONFIG_PACKAGE_luci-app-vlmcsd=y
-          CONFIG_PACKAGE_luci-app-vsftpd=y
-          CONFIG_PACKAGE_luci-app-watchcat=y
-          CONFIG_PACKAGE_luci-app-wifischedule=y
-          CONFIG_PACKAGE_luci-app-wireguard=y
-          CONFIG_PACKAGE_luci-app-wol=y
-          CONFIG_PACKAGE_luci-app-xlnetacc=y
-          CONFIG_PACKAGE_luci-app-zerotier=y
+          # CONFIG_PACKAGE_luci-app-minidlna=y
+          # CONFIG_PACKAGE_luci-app-openvpn=y
+          # CONFIG_PACKAGE_luci-app-openvpn-server=y
+          # CONFIG_PACKAGE_luci-app-qbittorrent=y
+          # CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Kcptun=y
+          # CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Shadowsocks=y
+          # CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_ShadowsocksR_Server=y
+          # CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_ShadowsocksR_Socks=y
+          # CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_V2ray=y
+          # CONFIG_PACKAGE_luci-app-ttyd=y
+          # CONFIG_PACKAGE_luci-app-v2ray-server=y
+          # CONFIG_PACKAGE_luci-app-verysync=y
+          # CONFIG_PACKAGE_luci-app-webadmin=y
+          # CONFIG_PACKAGE_luci-app-wireguard=y
+          # CONFIG_PACKAGE_luci-app-wrtbwmon=y
           EOF
 
           # LuCI主题:
-          cat >> .config <<EOF
-          CONFIG_PACKAGE_luci-theme-argon=y
-          CONFIG_PACKAGE_luci-theme-netgear=y
-          EOF
+          # cat >> .config <<EOF
+          # CONFIG_PACKAGE_luci-theme-argon=y
+          # CONFIG_PACKAGE_luci-theme-netgear=y
+          # EOF
 
           # 常用软件包:
           cat >> .config <<EOF
@@ -243,8 +181,6 @@ jobs:
           CONFIG_PACKAGE_tree=y
           CONFIG_PACKAGE_vim-fuller=y
           CONFIG_PACKAGE_wget=y
-          CONFIG_PACKAGE_netdata=y
-          CONFIG_ZABBIX_POSTGRESQL=y
           EOF
 
           # 取消编译VMware镜像以及镜像填充 (不要删除被缩进的注释符号):
