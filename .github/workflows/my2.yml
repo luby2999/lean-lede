@@ -1,0 +1,189 @@
+name: Build-OpenWrt
+
+on:
+  push:
+    branches: 
+      - master
+#  schedule:
+#    - cron: 0 8 * * 5
+#  watch:
+#    types: [started]
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    
+    steps:
+    - name: Clone Repository
+      uses: actions/checkout@v1
+    - name: Init build dependencies
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        docker rmi $(docker images -q)
+        sudo -E apt-get remove -y --purge azure-cli ghc zulu* hhvm llvm* firefox google* dotnet* powershell openjdk* mysql* php*
+        sudo -E apt-get update -y
+        sudo -E apt-get full-upgrade -y
+        sudo -E apt-get install -y build-essential asciidoc binutils bzip2 gawk gettext git libncurses5-dev libz-dev patch unzip zlib1g-dev lib32gcc1 libc6-dev-i386 subversion flex uglifyjs git-core gcc-8 gcc++-8 gcc-8-multilib g++-8-multilib p7zip p7zip-full msmtp libssl-dev texinfo libreadline-dev libglib2.0-dev xmlto qemu-utils upx libelf-dev autoconf automake libtool autopoint ccache curl wget vim nano python python3 python-pip python3-pip python-ply python3-ply haveged lrzsz device-tree-compiler
+        sudo -E apt-get autoremove -y --purge
+        sudo -E apt-get clean -y
+        sudo -E rm -rf /usr/share/dotnet /etc/mysql /etc/php
+    - name: Clone source
+      run: |
+        cd /home/runner
+        git clone https://github.com/Lienol/lean-lede
+        sudo chown -R runner:runner openwrt
+        cd /home/runner/openwrt
+        ./scripts/feeds update -a 
+        ./scripts/feeds install -a
+    - name: Before Build
+      run: |
+        /bin/bash /home/runner/work/build-openwrt/build-openwrt/before_build.sh
+        cp -fpR /home/runner/work/build-openwrt/build-openwrt/. /home/runner/openwrt/
+#    - name: SSH connection to Actions
+#      uses: csexton/debugger-action@master
+ # 编译N1固件:
+          cat >> .config <<EOF
+          CONFIG_TARGET_brcm2708=y
+          CONFIG_TARGET_brcm2708_bcm2710=y
+          CONFIG_TARGET_brcm2708_bcm2710_DEVICE_rpi-3=y
+          EOF
+
+          # 固件压缩:
+          cat >> .config <<EOF
+          CONFIG_TARGET_ROOTFS_TARGZ=y
+          EOF
+
+          # 编译UEFI固件:
+          cat >> .config <<EOF
+          CONFIG_EFI_IMAGES=y
+          EOF
+
+          # IPv6支持:
+          #cat >> .config <<EOF
+          #CONFIG_PACKAGE_dnsmasq_full_dhcpv6=y
+          #CONFIG_PACKAGE_ipv6helper=y
+          # EOF
+
+          # 多文件系统支持:
+          cat >> .config <<EOF
+          CONFIG_PACKAGE_kmod-fs-nfs=y
+          CONFIG_PACKAGE_kmod-fs-nfs-common=y
+          CONFIG_PACKAGE_kmod-fs-nfs-v3=y
+          CONFIG_PACKAGE_kmod-fs-nfs-v4=y
+          CONFIG_PACKAGE_kmod-fs-ntfs=y
+          CONFIG_PACKAGE_kmod-fs-squashfs=y
+          EOF
+
+          # USB3.0支持:
+          #cat >> .config <<EOF
+          #CONFIG_PACKAGE_kmod-usb-ohci=y
+          #CONFIG_PACKAGE_kmod-usb-ohci-pci=y
+          #CONFIG_PACKAGE_kmod-usb2=y
+          #CONFIG_PACKAGE_kmod-usb2-pci=y
+          # CONFIG_PACKAGE_kmod-usb3=y
+          # EOF
+
+          # 常用LuCI插件选择:
+          cat >> .config <<EOF
+          # CONFIG_PACKAGE_luci-app-adbyby-plus=y
+          # CONFIG_PACKAGE_luci-app-aria2=y
+          # CONFIG_PACKAGE_luci-app-baidupcs-web=y
+          # CONFIG_PACKAGE_luci-app-docker=y
+          # CONFIG_PACKAGE_luci-app-frpc=y
+          # CONFIG_PACKAGE_luci-app-kodexplorer=y
+          CONFIG_PACKAGE_luci-app-dnsforwarder=y
+          CONFIG_DEFAULT_luci-app-passwall=y
+          CONFIG_PACKAGE_luci-app-passwall=y
+          CONFIG_PACKAGE_luci-app-passwall_INCLUDE_ipt2socks=y
+          # CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Shadowsocks is not set
+          #CONFIG_PACKAGE_luci-app-passwall_INCLUDE_ShadowsocksR=y
+          CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Shadowsocks_socks=y
+          #CONFIG_PACKAGE_luci-app-passwall_INCLUDE_ShadowsocksR_socks is not set
+          CONFIG_PACKAGE_luci-app-passwall_INCLUDE_V2ray=y
+          # CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Trojan is not set
+          # CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Brook is not set
+          # CONFIG_PACKAGE_luci-app-passwall_INCLUDE_kcptun is not set
+          CONFIG_PACKAGE_luci-app-passwall_INCLUDE_haproxy=y
+          CONFIG_PACKAGE_luci-app-passwall_INCLUDE_ChinaDNS_NG=y
+          CONFIG_PACKAGE_luci-app-passwall_INCLUDE_pdnsd=y
+          CONFIG_PACKAGE_luci-app-passwall_INCLUDE_dns2socks=y
+          CONFIG_PACKAGE_luci-app-smartdns=y
+          # CONFIG_PACKAGE_luci-app-minidlna=y
+          # CONFIG_PACKAGE_luci-app-openvpn=y
+          # CONFIG_PACKAGE_luci-app-openvpn-server=y
+          # CONFIG_PACKAGE_luci-app-qbittorrent=y
+          CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Kcptun=y
+          CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Shadowsocks=y
+          # CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_ShadowsocksR_Server=y
+          CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_ShadowsocksR_Socks=y
+          CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_V2ray=y
+          CONFIG_PACKAGE_luci-app-ttyd=y
+          # CONFIG_PACKAGE_luci-app-v2ray-server=y
+          # CONFIG_PACKAGE_luci-app-verysync=y
+          # CONFIG_PACKAGE_luci-app-webadmin=y
+          # CONFIG_PACKAGE_luci-app-wireguard=y
+          # CONFIG_PACKAGE_luci-app-wrtbwmon=y
+          EOF
+
+          # LuCI主题:
+          cat >> .config <<EOF
+          CONFIG_PACKAGE_luci-theme-argon=y
+          CONFIG_PACKAGE_luci-theme-netgear=y
+          EOF
+          
+          # 语言:
+          cat >> .config <<EOF
+          CONFIG_PACKAGE_perl=y
+          CONFIG_PERL_NOCOMMENT=y
+          CONFIG_PACKAGE_perlbase-config=y
+          CONFIG_PACKAGE_perlbase-essential=y
+          CONFIG_PACKAGE_perlbase-re=y
+          CONFIG_PACKAGE_perlbase-unicore=y
+          CONFIG_PACKAGE_perlbase-utf8=y
+          EOF
+          
+          # 常用软件包:
+          cat >> .config <<EOF
+          CONFIG_PACKAGE_curl=y
+          CONFIG_PACKAGE_htop=y
+          CONFIG_PACKAGE_nano=y
+          CONFIG_PACKAGE_screen=y
+          CONFIG_PACKAGE_tree=y
+          CONFIG_PACKAGE_vim-fuller=y
+          CONFIG_PACKAGE_wget=y
+          EOF
+
+          # 取消编译VMware镜像以及镜像填充 (不要删除被缩进的注释符号):
+          cat >> .config <<EOF
+          # CONFIG_TARGET_IMAGES_PAD is not set
+          # CONFIG_VMDK_IMAGES is not set
+          EOF
+
+          # 
+          # ========================固件定制部分结束========================
+          # 
+
+          sed -i 's/^[ \t]*//g' ./.config
+          make defconfig 
+    - name: Start Build
+      run: | 
+        cd /home/runner/openwrt
+        let make_process=$(nproc)+1
+        mv .config .config_default
+        rm -f .config.old
+        config_names="$(ls .config*)"
+        for i in $config_names;do mv -f $i .config; make defconfig; make -j${make_process}; rm -rf build_dir/target* build_dir/toolchain* staging_dir/target* staging_dir/toolchain*; done
+    - name: After Build
+      run: |
+        /bin/bash /home/runner/openwrt/after_build.sh
+    - name: Upload Packages
+      uses: actions/upload-artifact@master
+      with:
+        name: Packages
+        path: /home/runner/openwrt/bin/packages/
+    - name: Upload Firmwares
+      uses: actions/upload-artifact@master
+      with:
+        name: Firmwares
+        path: /home/runner/openwrt/bin/targets/
