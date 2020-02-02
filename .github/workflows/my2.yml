@@ -133,7 +133,9 @@ jobs:
              CONFIG_PACKAGE_rp-pppoe-server=y
              CONFIG_PACKAGE_vlmcsd=y
              EOF
-
+          sed -i 's/^[ \t]*//g' ./.config
+          make defconfig
+          
       - name: Make download
         run: |
           make download -j8
